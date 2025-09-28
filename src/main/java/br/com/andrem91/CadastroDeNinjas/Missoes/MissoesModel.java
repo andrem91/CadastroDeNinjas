@@ -3,6 +3,8 @@ package br.com.andrem91.CadastroDeNinjas.Missoes;
 import br.com.andrem91.CadastroDeNinjas.Ninjas.NinjaModel;
 import jakarta.persistence.*;
 
+import java.util.List;
+
 @Entity
 @Table(name = "tb_missoes")
 public class MissoesModel {
@@ -12,15 +14,15 @@ public class MissoesModel {
     private long id;
     private String nome;
     private String dificuldade;
-    private NinjaModel ninjas;
+    @OneToMany(mappedBy = "missoes")
+    private List<NinjaModel> ninjas;
 
     public MissoesModel() {
     }
 
-    public MissoesModel(String nome, String dificuldade, NinjaModel ninjas) {
+    public MissoesModel(String nome, String dificuldade) {
         this.nome = nome;
         this.dificuldade = dificuldade;
-        this.ninjas = ninjas;
     }
 
     public String getNome() {
@@ -39,11 +41,4 @@ public class MissoesModel {
         this.dificuldade = dificuldade;
     }
 
-    public NinjaModel getNinjas() {
-        return ninjas;
-    }
-
-    public void setNinjas(NinjaModel ninjas) {
-        this.ninjas = ninjas;
-    }
 }
