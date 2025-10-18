@@ -3,6 +3,7 @@ package br.com.andrem91.CadastroDeNinjas.Ninjas;
 import br.com.andrem91.CadastroDeNinjas.Missoes.MissoesModel;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
@@ -11,23 +12,29 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 @Data
+@Builder
 public class NinjaModel {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "id")
     private Long id;
-    @Column(name = "nome")
+
+    @Column(nullable = false, length = 100)
     private String nome;
-    @Column(unique = true, name = "email")
+
+    @Column(unique = true, nullable = false)
     private String email;
+
     @Column(name = "img_url")
     private String imgUrl;
-    @Column(name = "idade")
-    private int idade;
-    @Column(name = "rank")
+
+    @Column(nullable = false)
+    private Integer idade;
+
+    @Column(nullable = false, length = 50)
     private String rank;
-    @ManyToOne
+
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "missoes_id")
     private MissoesModel missoes;
 

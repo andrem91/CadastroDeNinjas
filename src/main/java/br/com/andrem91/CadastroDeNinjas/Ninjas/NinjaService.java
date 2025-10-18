@@ -1,5 +1,6 @@
 package br.com.andrem91.CadastroDeNinjas.Ninjas;
 
+import br.com.andrem91.CadastroDeNinjas.Exceptions.NinjaNotFoundException;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -9,50 +10,61 @@ import java.util.stream.Collectors;
 @Service
 public class NinjaService {
 
-    private NinjaRepository ninjaRepository;
-    private  NinjaMapper ninjaMapper;
+    private final NinjaRepository ninjaRepository;
+    private final NinjaMapper ninjaMapper;
 
     public NinjaService(NinjaRepository ninjaRepository, NinjaMapper ninjaMapper) {
         this.ninjaRepository = ninjaRepository;
         this.ninjaMapper = ninjaMapper;
     }
 
-    // Listar todos os meus ninjas
     public List<NinjaDTO> listarNinjas() {
-        List<NinjaModel> ninjas = ninjaRepository.findAll();
-        return ninjas.stream()
+        return ninjaRepository.findAll()
+                .stream()
                 .map(ninjaMapper::map)
                 .collect(Collectors.toList());
     }
 
-    // selecionar ninja por ID
-    public NinjaDTO selecionarNinjaPorId(Long id) {
-        Optional<NinjaModel> ninjas = ninjaRepository.findById(id);
-        return ninjas.map(ninjaMapper::map).orElse(null);
-    }
-
-    // criar novo ninja
-    public NinjaDTO criarNinja(NinjaDTO ninjaDTO) {
-        NinjaModel ninja = ninjaMapper.map(ninjaDTO);
-        ninja = ninjaRepository.save(ninja);
+    public NinjaDTO buscarNinjaPorId(Long id) {
+        NinjaModel ninja = ninjaRepository.findById(id)
+                .orElseThrow(() -> new NinjaNotFoundException(id));
         return ninjaMapper.map(ninja);
     }
 
-    // deletar ninja
+    public NinjaDTO criarNinja(NinjaDTO ninjaDTO) {
+        validarEmail(ninjaDTO.getEmail());
+        NinjaModel ninja = ninjaMapper.map(ninjaDTO);
+        NinjaModel ninjaSalvo = ninjaRepository.save(ninja);
+        return ninjaMapper.map(ninjaSalvo);
+    }
+
     public void deletarNinjaPorId(Long id) {
+        if (!ninjaRepository.existsById(id)) {
+            throw new NinjaNotFoundException(id);
+        }
         ninjaRepository.deleteById(id);
     }
 
-    // Atualizar ninja
     public NinjaDTO atualizarNinja(Long id, NinjaDTO ninjaDTO) {
-        Optional<NinjaModel> ninjaExistente = ninjaRepository.findById(id);
-        if(ninjaExistente.isPresent()) {
-            NinjaModel ninjaAtualizado = ninjaMapper.map(ninjaDTO);
-            ninjaAtualizado.setId(id);
-            NinjaModel ninjaSalvo = ninjaRepository.save(ninjaAtualizado);
-            return ninjaMapper.map(ninjaSalvo);
-        }
-        return null;
+        NinjaModel ninjaExistente = ninjaRepository.findById(id)
+                .orElseThrow(() -> new NinjaNotFoundException(id));
+
+        atualizarCampos(ninjaExistente, ninjaDTO);
+        NinjaModel ninjaSalvo = ninjaRepository.save(ninjaExistente);
+        return ninjaMapper.map(ninjaSalvo);
+    }
+
+    private void atualizarCampos(NinjaModel ninja, NinjaDTO dto) {
+        ninja.setNome(dto.getNome());
+        ninja.setEmail(dto.getEmail());
+        ninja.setImgUrl(dto.getImgUrl());
+        ninja.setIdade(dto.getIdade());
+        ninja.setRank(dto.getRank());
+        ninja.setMissoes(dto.getMissoes());
+    }
+
+    private void validarEmail(String email) {
+        // Implementar validação de email duplicado se necessário
     }
 
 }
